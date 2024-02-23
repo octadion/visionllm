@@ -43,6 +43,11 @@ jobs:
 
       - name: Push image to DigitalOcean Container Registry
         run: docker push $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
+
+      - name: Update Docker settings
+        run: |
+          sudo sed -i 's/ }/, \"max-concurrent-uploads\": 2 }/' /etc/docker/daemon.json
+          sudo systemctl restart docker
         
   deploy:
     runs-on: ubuntu-22.04
