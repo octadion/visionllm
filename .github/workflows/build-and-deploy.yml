@@ -1,34 +1,40 @@
-
 name: CI
 
-# 1
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push events but only for the master branch
   push:
-    branches: [ master ]
+    branches: [ main ]
 
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
       version:
         description: 'Image version'
         required: true
-#2
+      debug:
+        description: 'enable debug mode'
+        default: false
+        
 env:
   REGISTRY: "registry.digitalocean.com/visionllm"
-  IMAGE_NAME: "visionllm"
+  IMAGE_NAME: "visionllm-image"
 
-#3
 jobs:
   build_and_push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
+    
+      - name: Update Docker settings
+        run: |
+          sudo sed -i 's/ }/, \"max-concurrent-uploads\": 2 }/' /etc/docker/daemon.json
+          sudo systemctl restart docker
+          
       - name: Checkout the repo 
         uses: actions/checkout@v2
         
       - name: Build container image
         run: docker build -t $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7) .
+
+      - name: Debug SSH Key
+        run: echo "${{ secrets.SSH_KEY }}" | base64 --decode || true
 
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
@@ -45,7 +51,7 @@ jobs:
         run: docker push $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
         
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build_and_push
     
     steps:
@@ -54,8 +60,7 @@ jobs:
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSHKEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
+          key: ${{ secrets.SSH_KEY }}
           envs: IMAGE_NAME,REGISTRY,{{ secrets.DIGITALOCEAN_ACCESS_TOKEN }},GITHUB_SHA
           script: |
             # Login to registry
@@ -66,6 +71,7 @@ jobs:
             docker rm $(echo $IMAGE_NAME)
             # Run a new container from a new image
             docker run -d \
+            -p 8010:8001 \
             --restart always \
             --name $(echo $IMAGE_NAME) \
             $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
