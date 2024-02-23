@@ -5,6 +5,6 @@ COPY . /app
 
 RUN apt update -y
 
-RUN apt-get update && apt-get install --no-install-recommends -y && pip install -r requirements.txt
+RUN apt-get update && apt-get install && pip install -r requirements.txt
 
 CMD ["python", "streamlit.py"]
