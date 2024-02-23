@@ -1,0 +1,10 @@
+streamlit
+super_gradients
+opencv-python
+langchain
+huggingface_hub
+sentence-transformers
+torch
+accelerate
+llama-cpp-python==0.2.6
+gtts
