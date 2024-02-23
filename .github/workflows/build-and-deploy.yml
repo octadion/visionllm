@@ -17,7 +17,7 @@ on:
 #2
 env:
   REGISTRY: "registry.digitalocean.com/visionllm"
-  IMAGE_NAME: "vision-llm"
+  IMAGE_NAME: "visionllm"
 
 #3
 jobs:
