@@ -71,7 +71,7 @@ def main():
             st.markdown("<hr/>", unsafe_allow_html = True)
             st.title("Responses")
             response = load_yolonas_process_frame(image, stframe)
-            output_filename = "runs/test/output_imagr.wav"
+            output_filename = "runs/test/output_audio.wav"
             if response and isinstance(response, str):
                 with st.spinner("Generating voice output... Please wait"):
                     speech = gTTS(text=response, lang="en", slow=False)
