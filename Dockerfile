@@ -1,15 +1,13 @@
 FROM python:3.9-slim as python-base
 
-# WORKDIR /app
+WORKDIR /app
 
-# COPY . /app
+COPY . /app
 
-# RUN apt-get update -y && apt-get install -y \
-#     gcc \
-#     g++ \
-#     python3-dev
+RUN apt-get update -y && apt-get install -y \
+    gcc \
+    g++ \
+    python3-dev \
+    && pip install --upgrade pip && pip install -r requirements.txt
 
-# RUN pip install --upgrade pip && pip install -r requirements.txt
-
-# # Atur perintah default
-# CMD ["python", "streamlit.py"]
+CMD ["python", "streamlit.py"]
