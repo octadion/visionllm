@@ -8,3 +8,4 @@ torch
 accelerate
 llama-cpp-python==0.2.6
 gtts
+flask

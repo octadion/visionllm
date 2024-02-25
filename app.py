@@ -17,7 +17,7 @@ n_gpu_layers = -1
 def generate_frames(sign):
     llm = LlamaCpp(
         streaming = True,
-        model_path='C:/Master/visionllm/models/zephyr-7b-beta.Q4_K_S.gguf',
+        model_path='./models/zephyr-7b-beta.Q4_K_S.gguf',
         temperature=0.1,
         top_p=1,
         n_gpu_layers=n_gpu_layers, 
