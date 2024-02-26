@@ -10,7 +10,8 @@ RUN apt-get update -y && apt-get install -y \
     python3-dev \
     curl \
     && pip install --upgrade pip && pip install -r requirements.txt
-
+    
+RUN mkdir -p models/llm
 RUN curl -L https://huggingface.co/TheBloke/zephyr-7B-beta-GGUF/resolve/main/zephyr-7b-beta.Q4_K_S.gguf -o models/llm/zephyr-7b-beta.Q4_K_S.gguf
 
 CMD ["python", "main.py"]
