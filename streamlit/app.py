@@ -17,7 +17,7 @@ n_gpu_layers = -1
 def generate_frames(sign):
     llm = LlamaCpp(
         streaming = True,
-        model_path='./models/zephyr-7b-beta.Q4_K_S.gguf',
+        model_path='./models/llm/zephyr-7b-beta.Q4_K_S.gguf',
         temperature=0.1,
         top_p=1,
         n_gpu_layers=n_gpu_layers, 
@@ -43,9 +43,9 @@ def load_yolonas_process_each_frame(video_name, stframe):
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
-    model = models.get('yolo_nas_s', num_classes= 77, checkpoint_path='models/weights/ckpt_best2.pth')
+    model = models.get('yolo_nas_s', num_classes= 77, checkpoint_path='models/yolo-nas/ckpt_best2.pth')
     count = 0
-    with open('data/data2.yaml', 'r') as file:
+    with open('data/config/data2.yaml', 'r') as file:
         data = yaml.safe_load(file)
     classNames = data.pop('names')
     out = cv2.VideoWriter('runs/test/output.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
@@ -96,8 +96,8 @@ def load_yolonas_process_each_frame(video_name, stframe):
 
 def load_yolonas_process_frame(input, stframe):
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
-    model = models.get('yolo_nas_s', num_classes= 77, checkpoint_path='models/weights/ckpt_best2.pth')
-    with open('data/data2.yaml', 'r') as file:
+    model = models.get('yolo_nas_s', num_classes= 77, checkpoint_path='models/yolo-nas/ckpt_best2.pth')
+    with open('data/config/data2.yaml', 'r') as file:
         data = yaml.safe_load(file)
     classNames = data.pop('names')
     class_final_names = []

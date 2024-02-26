@@ -10,7 +10,8 @@ from gtts import gTTS
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'visionllm'
-app.config['UPLOAD_FOLDER'] = 'data/images'
+app.config['VIDEO_UPLOAD_FOLDER'] = 'data/videos'
+app.config['IMAGE_UPLOAD_FOLDER'] = 'data/images'
 
 objects = None
 response = None
@@ -39,16 +40,19 @@ def generate_frames_image(path_x=''):
 def home():
     return "Welcome"
 
-@app.route('/video')
+@app.route('/video', methods = ['POST'])
 def video():
-    return Response(generate_frames(path_x="data/videos/vidd2.mp4"), mimetype='multipart/x-mixed-replace; boundary=frame')
+    vid = request.files['file']
+    filename = secure_filename(vid.filename)
+    vid.save(os.path.join(app.config['VIDEO_UPLOAD_FOLDER'], filename))
+    return Response(generate_frames(path_x=os.path.join(app.config['VIDEO_UPLOAD_FOLDER'], filename)), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/image', methods = ['POST'])
 def image():
     img = request.files['file']
     filename = secure_filename(img.filename)
-    img.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    return Response(generate_frames_image(path_x=os.path.join(app.config['UPLOAD_FOLDER'], filename)), mimetype='multipart/x-mixed-replace; boundary=frame')
+    img.save(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], filename))
+    return Response(generate_frames_image(path_x=os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], filename)), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/get_objects', methods = ['GET'])
 def get_objects():
@@ -57,11 +61,12 @@ def get_objects():
 
 @app.route('/llm')
 def llm():
-    n_gpu_layers = -1
+    global response
     global objects
+    n_gpu_layers = -1
     llm = LlamaCpp(
         streaming = True,
-        model_path='./app/models/zephyr-7b-beta.Q4_K_S.gguf',
+        model_path='./app/models/llm/zephyr-7b-beta.Q4_K_S.gguf',
         temperature=0.1,
         top_p=1,
         n_gpu_layers=n_gpu_layers, 
@@ -83,12 +88,17 @@ def llm():
     response = llm_chain.run(objects)
     return jsonify(result=response)
 
+@app.route('/get_response', methods = ['GET'])
+def get_response():
+    global response
+    return jsonify(result=response)
+
 @app.route('/gtts')
 def gtts():
     global response
     speech = gTTS(text=response, lang='en', slow=False)
-    speech.save('output.wav')
-    return send_file('output.wav', mimetype='audio/wav')
+    speech.save('./runs/test/output_audio.wav')
+    return send_file('./runs/test/output_audio.wav', mimetype='audio/wav')
 
 if __name__ == "__main__":
     app.run(debug=True)

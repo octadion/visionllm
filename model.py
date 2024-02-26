@@ -17,11 +17,11 @@ def video_detection(path_x):
 
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
 
-    model = models.get('yolo_nas_s', num_classes= 77, checkpoint_path='models/weights/ckpt_best2.pth').to(device)
+    model = models.get('yolo_nas_s', num_classes= 77, checkpoint_path='models/yolo-nas/ckpt_best2.pth').to(device)
 
     count = 0
 
-    with open('data/data2.yaml', 'r') as file:
+    with open('data/config/data2.yaml', 'r') as file:
         data = yaml.safe_load(file)
 
     classNames = data.pop('names')
@@ -52,6 +52,7 @@ def video_detection(path_x):
                 c2 = x1+t_size[0], y1-t_size[1] - 3
                 cv2.rectangle(frame, (x1, y1), c2, [255, 144, 30], -1, cv2.LINE_AA)
                 cv2.putText(frame, label, (x1, y1-2), 0, 1, [255, 255, 255], thickness=1, lineType = cv2.LINE_AA)
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 255), 3)
                 resize_frame = cv2.resize(frame, (0,0), fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
             lists = np.array(class_final_names)
             unique_list = np.unique(lists)
@@ -75,8 +76,8 @@ def image_detection(path_x):
 
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
 
-    model = models.get('yolo_nas_s', num_classes= 77, checkpoint_path='models/weights/ckpt_best2.pth').to(device)
-    with open('data/data2.yaml', 'r') as file:
+    model = models.get('yolo_nas_s', num_classes= 77, checkpoint_path='models/yolo-nas/ckpt_best2.pth').to(device)
+    with open('data/config/data2.yaml', 'r') as file:
         data = yaml.safe_load(file)
 
     classNames = data.pop('names')
