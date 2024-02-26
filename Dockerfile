@@ -9,6 +9,7 @@ RUN apt-get update -y && apt-get install -y \
     g++ \
     python3-dev \
     curl \
+    libgl1-mesa-glx \
     && pip install --upgrade pip && pip install -r requirements.txt
     
 RUN mkdir -p models/llm
