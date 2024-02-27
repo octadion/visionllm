@@ -101,4 +101,4 @@ def gtts():
     return send_file('./runs/test/output_audio.wav', mimetype='audio/wav')
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0')
