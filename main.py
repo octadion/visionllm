@@ -66,7 +66,7 @@ def llm():
     n_gpu_layers = -1
     llm = LlamaCpp(
         streaming = True,
-        model_path='./app/models/llm/zephyr-7b-beta.Q4_K_S.gguf',
+        model_path='models/llm/zephyr-7b-beta.Q4_K_S.gguf',
         temperature=0.1,
         top_p=1,
         n_gpu_layers=n_gpu_layers, 
