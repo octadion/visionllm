@@ -14,7 +14,7 @@ RUN apt-get update -y && apt-get install -y \
     git-lfs \
     && pip install --upgrade pip && pip install -r requirements.txt
 
-RUN git lfs install && \
+RUN git lfs install --force && \
     git clone -b 'main' --single-branch --depth 1 https://github.com/octadion/visionllm.git && \
     cd visionllm && \
     git lfs pull
