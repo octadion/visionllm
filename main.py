@@ -107,6 +107,7 @@ def llm():
         top_p=1,
         n_gpu_layers=n_gpu_layers, 
         verbose=False,
+        # n_ctx=4096
         )
     template = """You are a language model designed to provide instructions, 
     directions, and descriptions based on the given input to assist blind people. 
