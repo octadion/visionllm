@@ -9,3 +9,6 @@ accelerate
 llama-cpp-python==0.2.6
 gtts
 flask
+psycopg2
+boto3
+python-dotenv

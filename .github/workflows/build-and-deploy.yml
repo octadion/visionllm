@@ -17,6 +17,15 @@ on:
 env:
   REGISTRY: registry.digitalocean.com/visionllm #registry.digitalocean.com/visionllm
   IMAGE_NAME: vision-llm
+  DB_HOST: ${{ secrets.DB_HOST }}
+  DB_PORT: ${{ secrets.DB_PORT }}
+  DB_NAME: ${{ secrets.DB_NAME }}
+  DB_USER: ${{ secrets.DB_USER }}
+  DB_PASS: ${{ secrets.DB_PASS }}
+  S3_REGION: ${{ secrets.S3_REGION }}
+  S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
+  S3_KEY: ${{ secrets.S3_KEY }}
+  S3_SECRET: ${{ secrets.S3_SECRET }}
 
 #3
 jobs:
@@ -55,7 +64,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSHKEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
-          envs: IMAGE_NAME,REGISTRY,{{ secrets.DIGITALOCEAN_ACCESS_TOKEN }},GITHUB_SHA
+          envs: IMAGE_NAME,REGISTRY,{{ secrets.DIGITALOCEAN_ACCESS_TOKEN }},GITHUB_SHA,DB_HOST,DB_PORT,DB_NAME,DB_USER,DB_PASS,S3_REGION,S3_ENDPOINT,S3_KEY,S3_SECRET
           script: |
             # Login to registry
             docker login -u ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} -p ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} registry.digitalocean.com
@@ -68,4 +77,13 @@ jobs:
             -p 8001:8001 \
             --restart always \
             --name $(echo $IMAGE_NAME) \
+            --env DB_HOST=$(echo $DB_HOST) \
+            --env DB_PORT=$(echo $DB_PORT) \
+            --env DB_NAME=$(echo $DB_NAME) \
+            --env DB_USER=$(echo $DB_USER) \
+            --env DB_PASS=$(echo $DB_PASS) \
+            --env S3_REGION=$(echo $S3_REGION) \
+            --env S3_ENDPOINT=$(echo $S3_ENDPOINT) \
+            --env S3_KEY=$(echo $S3_KEY) \
+            --env S3_SECRET=$(echo $S3_SECRET) \
             $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
