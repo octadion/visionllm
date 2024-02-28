@@ -65,9 +65,18 @@ def home():
 
 @app.route('/video', methods = ['POST'])
 def video():
+    global video_id
     vid = request.files['file']
     filename = secure_filename(vid.filename)
     vid.save(os.path.join(app.config['VIDEO_UPLOAD_FOLDER'], filename))
+    with open(os.path.join(app.config['VIDEO_UPLOAD_FOLDER'], filename), "rb") as data:
+        s3.upload_fileobj(data, "results", "videos/" + filename)
+    cur = conn.cursor()
+    video_url = "https://visionllm.sgp1.digitaloceanspaces.com/results/videos/" + filename
+    cur.execute("INSERT INTO videos (data) VALUES (%s) RETURNING id", (video_url,))
+    video_id = cur.fetchone()[0]
+    conn.commit()
+    cur.close()
     return Response(generate_frames(path_x=os.path.join(app.config['VIDEO_UPLOAD_FOLDER'], filename)), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/image', methods = ['POST'])
