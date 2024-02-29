@@ -273,7 +273,7 @@ def run_schedule():
     
 if __name__ == "__main__":
 
-    schedule.every().day.at("00:00").do(job)
+    schedule.every().day.at("14:00").do(job)
     schedule_thread = threading.Thread(target=run_schedule)
     schedule_thread.start()
     app.run(host='0.0.0.0', port='8001')
