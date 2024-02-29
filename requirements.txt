@@ -12,3 +12,4 @@ flask
 psycopg2
 boto3
 python-dotenv
+schedule
