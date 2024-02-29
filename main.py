@@ -89,25 +89,28 @@ def image():
     img = request.files['file']
     filename = secure_filename(img.filename)
     img.save(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], filename))
-    result = generate_frames_image(path_x=os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], filename))
-    result_filename = "result_" + filename
-    result.save(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], result_filename))
-    with open(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], result_filename), "rb") as data:
-        s3.upload_fileobj(data, "results", "images/" + result_filename)
-    cur = conn.cursor()
-    image_url = "https://visionllm.sgp1.digitaloceanspaces.com/results/images/" + result_filename
-    cur.execute("INSERT INTO images (data, create_time) VALUES (%s, NOW()) RETURNING id", (image_url,))
-    image_id = cur.fetchone()[0]
-    conn.commit()
-    cur.close()
-    ext = os.path.splitext(filename)[1]
-    if ext.lower() == '.png':
-        mimetype = 'image/png'
-    elif ext.lower() in ['.jpg', '.jpeg']:
-        mimetype = 'image/jpeg'
-    else:
-        mimetype = 'application/octet-stream'
-    return send_file(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], result_filename), mimetype=mimetype)
+    result_generator = generate_frames_image(path_x=os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], filename))
+    for idx, result in enumerate(result_generator):
+        result_filename = f"result_{idx}_" + filename
+        with open(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], result_filename), 'wb') as f:
+            f.write(result.split(b'\r\n\r\n')[1])
+        with open(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], result_filename), "rb") as data:
+            s3.upload_fileobj(data, "results", "images/" + result_filename)
+        cur = conn.cursor()
+        image_url = "https://visionllm.sgp1.digitaloceanspaces.com/results/images/" + result_filename
+        cur.execute("INSERT INTO images (data, create_time) VALUES (%s, NOW()) RETURNING id", (image_url,))
+        image_id = cur.fetchone()[0]
+        conn.commit()
+        cur.close()
+        ext = os.path.splitext(filename)[1]
+        if ext.lower() == '.png':
+            mimetype = 'image/png'
+        elif ext.lower() in ['.jpg', '.jpeg']:
+            mimetype = 'image/jpeg'
+        else:
+            mimetype = 'application/octet-stream'
+        return send_file(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], result_filename), mimetype=mimetype)
+
 
 @app.route('/get_objects', methods = ['GET'])
 def get_objects():
@@ -202,17 +205,19 @@ def job():
     filename = secure_filename(file_name)
     with open(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], filename), 'wb') as f:
         f.write(file_content)
-    result = generate_frames_image(path_x=os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], filename))
-    result_filename = "result_" + filename
-    result.save(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], result_filename))
-    with open(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], result_filename), "rb") as data:
-        s3.upload_fileobj(data, "results", "images/" + result_filename)
-    cur = conn.cursor()
-    image_url = "https://visionllm.sgp1.digitaloceanspaces.com/results/images/" + result_filename
-    cur.execute("INSERT INTO images (data, create_time) VALUES (%s, NOW()) RETURNING id", (image_url,))
-    image_id = cur.fetchone()[0]
-    conn.commit()
-    cur.close()
+    result_generator = generate_frames_image(path_x=os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], filename))
+    for idx, result in enumerate(result_generator):
+        result_filename = f"result_{idx}_" + filename
+        with open(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], result_filename), 'wb') as f:
+            f.write(result.split(b'\r\n\r\n')[1])
+        with open(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], result_filename), "rb") as data:
+            s3.upload_fileobj(data, "results", "images/" + result_filename)
+        cur = conn.cursor()
+        image_url = "https://visionllm.sgp1.digitaloceanspaces.com/results/images/" + result_filename
+        cur.execute("INSERT INTO images (data, create_time) VALUES (%s, NOW()) RETURNING id", (image_url,))
+        image_id = cur.fetchone()[0]
+        conn.commit()
+        cur.close()
     # detected objects
     cur = conn.cursor()
     cur.execute("INSERT INTO texts (object, create_time) VALUES (%s, NOW()) RETURNING id", (objects,))
@@ -273,7 +278,7 @@ def run_schedule():
     
 if __name__ == "__main__":
 
-    schedule.every().day.at("14:00").do(job)
+    schedule.every().day.at("15:00").do(job)
     schedule_thread = threading.Thread(target=run_schedule)
     schedule_thread.start()
     app.run(host='0.0.0.0', port='8001')
