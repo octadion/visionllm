@@ -197,8 +197,8 @@ def read_random_file(bucket_name, folder_name):
 def job():
     global image_id, objects, text_id, response, audio_id
     # yolo
-    bucket_name = 'visionllm'
-    folder_name = 'raw/images/'
+    bucket_name = 'raw'
+    folder_name = 'images/'
     file_name = read_random_file(bucket_name, folder_name)
     obj = s3.get_object(Bucket=bucket_name, Key=file_name)
     file_content = obj['Body'].read()
@@ -278,7 +278,7 @@ def run_schedule():
     
 if __name__ == "__main__":
 
-    schedule.every().day.at("19:00").do(job)
+    schedule.every().day.at("03:00").do(job)
     schedule_thread = threading.Thread(target=run_schedule)
     schedule_thread.start()
     app.run(host='0.0.0.0', port='8001')
