@@ -35,6 +35,12 @@ s3 = boto3.client('s3',
                   aws_access_key_id=os.getenv("S3_KEY"),
                   aws_secret_access_key=os.getenv("S3_SECRET"))
 
+client_objects = boto3.client('s3',
+                  region_name=os.getenv("S3_REGION"),
+                  endpoint_url='https://sgp1.digitaloceanspaces.com',
+                  aws_access_key_id=os.getenv("S3_KEY"),
+                  aws_secret_access_key=os.getenv("S3_SECRET"))
+
 objects = None
 response = None
 image_id = None
@@ -189,7 +195,7 @@ def save_prediction():
         return jsonify(result="Error: image_id, text_id, or audio_id is None")
     
 def read_random_file(bucket_name, folder_name):
-    response = s3.list_objects(Bucket=bucket_name, Prefix=folder_name)
+    response = client_objects.list_objects(Bucket=bucket_name, Prefix=folder_name)
     files = [file['Key'] for file in response['Contents']]
     file_to_read = random.choice(files)
     return file_to_read
@@ -197,10 +203,10 @@ def read_random_file(bucket_name, folder_name):
 def job():
     global image_id, objects, text_id, response, audio_id
     # yolo
-    bucket_name = 'raw'
-    folder_name = 'images/'
+    bucket_name = 'visionllm'
+    folder_name = 'raw/images/'
     file_name = read_random_file(bucket_name, folder_name)
-    obj = s3.get_object(Bucket=bucket_name, Key=file_name)
+    obj = client_objects.get_object(Bucket=bucket_name, Key=file_name)
     file_content = obj['Body'].read()
     filename = secure_filename(file_name)
     with open(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], filename), 'wb') as f:
@@ -278,7 +284,7 @@ def run_schedule():
     
 if __name__ == "__main__":
 
-    schedule.every().day.at("03:00").do(job)
+    schedule.every().day.at("04:30").do(job)
     schedule_thread = threading.Thread(target=run_schedule)
     schedule_thread.start()
     app.run(host='0.0.0.0', port='8001')
